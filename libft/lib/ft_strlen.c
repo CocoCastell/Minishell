@@ -1,30 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cochatel <cochatel@student.42barcelona.com>+#+  +:+       +#+        */
+/*   By: cochatel <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/10 14:47:37 by cochatel          #+#    #+#             */
-/*   Updated: 2025/03/09 18:15:03 by cochatel         ###   ########.fr       */
+/*   Created: 2024/09/24 17:12:02 by cochatel          #+#    #+#             */
+/*   Updated: 2025/02/12 13:44:36 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "minishell.h"
+#include "../includes/libft.h"
 
-//REPL-> Read-Evaluate-Print/Execute loop
-
-int	main(int argc, char *argv[])
+size_t	ft_strlen(const char *str)
 {
-	while (1)
-	{
-		// 1) Read: get line
-		
+	size_t	i;
 
-		// 2) Evaluate: lexing-parsing
-
-
-		// 3) Execute
-	}
-	return (EXIT_SUCCESS);
+	i = 0;
+	if (str == NULL)
+		return (0);
+	while (str[i] != '\0')
+		i++;
+	return (i);
 }
