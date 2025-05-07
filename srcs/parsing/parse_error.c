@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 19:56:14 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/05 16:10:55 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/14 16:12:13 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ t_node	*cmd_err(int flag, t_node *cmd_node, char **arg_ln, t_token **tk)
 		return (synthax_error(cmd_node, 4, tk));
 	if (is_part_of_cmd((*tk)->next) == 3 || flag == 1)
 		return (synthax_error(cmd_node, 5, tk));
-	if (is_part_of_cmd((*tk)->next) == 0) // || (*tk)->type == O_BRACKET)
+	if (is_part_of_cmd((*tk)->next) == 0)
 		return (synthax_error(cmd_node, 3, tk));
 	return (synthax_error(cmd_node, 2, tk));
 }
@@ -28,9 +28,10 @@ t_node	*cmd_err(int flag, t_node *cmd_node, char **arg_ln, t_token **tk)
 t_node	*synthax_error(t_node *node, int flag, t_token **tok)
 {
 	if (flag == 1 && (*tok == NULL || is_part_of_cmd(*tok) == 3))
-		printf(BL"msh: Syntax error: newline unexpected (expecting \")\"\n"DEF);
+		printf(BL"msh: syntax error near unexpected token `('\n"DEF);
 	else if (flag == 1 && *tok != NULL)
-		printf(BL"msh: Syntax error: '%s' unexpected\n"DEF, (*tok)->str);
+		printf(BL"msh: syntax error near unexpected token `%s'\n"DEF, \
+			(*tok)->str);
 	else if (flag == 2)
 		printf(BL"msh: Syntax error: word unexpected (expecting \")\")\n"DEF);
 	else if (flag == 3 && *tok != NULL)
@@ -40,6 +41,8 @@ t_node	*synthax_error(t_node *node, int flag, t_token **tok)
 		printf(BL"msh: Syntax error: newline unexpected\n"DEF);
 	else if (flag == 5)
 		printf(BL"msh: Syntax error: redirection unexpected\n"DEF);
+	else if (flag == 6)
+		printf(BL"msh: syntax error: unexpected end of file\n"DEF);
 	if (node == NULL)
 		make_node(&node, PIPE_NODE);
 	node->error = 1;
@@ -50,7 +53,7 @@ t_node	*error_malloc(t_node *node)
 {
 	if (node != NULL)
 		node->error = 1;
-	perror("Memory allocation failed\n");
+	perror(RED"Memory allocation failed\n"DEF);
 	return (node);
 }
 

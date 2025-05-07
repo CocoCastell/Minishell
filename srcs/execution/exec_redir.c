@@ -6,57 +6,27 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:27:53 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/05 16:14:00 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/22 11:20:53 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-void	heredoc_loop(int pipe_fd[2], char *hd)
+void	signal_handle(int sig)
 {
-	char	*input;
-
-	while (1)
+	if (sig == SIGINT)
 	{
-		input = readline("heredoc> ");
-		if (ft_strncmp(input, hd, ft_strlen(hd) + 1) == 0)
-			break ;
-		write(pipe_fd[1], input, ft_strlen(input));
-		write(pipe_fd[1], "\n", 1);
-		free_wrap(input);
+		write(1, "\n", 1);
+		exit(130);
 	}
-	free_wrap(input);
 }
 
-void	handle_heredoc(char *args)
-{
-	char	**hd;
-	int		pipe_fd[2];
-	int		i;
-
-	i = 0;
-	hd = ft_split(args, '\n');
-	if (pipe(pipe_fd) == -1)
-		return ; //error
-	while (hd[i] != NULL)
-	{
-		heredoc_loop(pipe_fd, hd[i]);
-		i++;
-	}
-	ft_free_string_array(hd);
-	close(pipe_fd[1]);
-	dup2(pipe_fd[0], STDIN_FILENO);
-	close(pipe_fd[0]);
-}
-
-void	handle_redir_out(char *redir_out, char *append)
+int	handle_redir_out(char *redir_out, char *append, t_shell *sh, int i)
 {
 	char	**all_redir;
 	char	**all_app;
 	int		fd;
-	int		i;
 
-	i = 0;
 	all_redir = ft_split(redir_out, '\n');
 	all_app = ft_split(append, '\n');
 	while (all_redir[i] != NULL)
@@ -65,25 +35,107 @@ void	handle_redir_out(char *redir_out, char *append)
 			fd = open(all_redir[i], O_RDWR | O_CREAT | O_TRUNC, 0644);
 		else
 			fd = open(all_redir[i], O_RDWR | O_CREAT | O_APPEND, 0644);
+		if (fd == -1)
+		{
+			sh->error = 1;
+			return (perror("Error opening file"), 1);
+		}
 		i++;
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
 	ft_free_string_array(all_redir);
 	ft_free_string_array(all_app);
+	if (dup2(fd, STDOUT_FILENO) == -1)
+		return (close(fd), perror("Dup2 error"), 1);
+	return (close(fd), 0);
 }
 
-void	exec_redir(t_node *cmd_tree)
+int	handle_redir_in(char *redir_in, t_shell *sh, int i)
 {
-	int	in_fd;
+	char	**all_redir;
+	int		fd;
 
-	if (cmd_tree->command.redir_out != NULL)
-		handle_redir_out(cmd_tree->command.redir_out, cmd_tree->command.append);
-	if (cmd_tree->command.redir_in != NULL)
+	all_redir = ft_split(redir_in, '\n');
+	while (all_redir[i] != NULL)
 	{
-		in_fd = open(cmd_tree->command.redir_in, O_RDONLY);
-		dup2(in_fd, STDIN_FILENO);
+		fd = open(all_redir[i], O_RDONLY);
+		if (fd == -1)
+		{
+			sh->error = 1;
+			return (perror("Error opening file"), 1);
+		}
+		i++;
 	}
-	if (cmd_tree->command.heredoc != NULL)
-		handle_heredoc(cmd_tree->command.heredoc);
+	ft_free_string_array(all_redir);
+	if (dup2(fd, STDIN_FILENO) == -1)
+		return (close(fd), perror("Dup2 error"), 1);
+	return (close(fd), 0);
 }
+
+int	exec_redir(t_node *cmd_tree, t_shell *sh)
+{
+	if (cmd_tree->command.heredoc != NULL)
+	{
+		if (handle_heredoc(cmd_tree->command.heredoc, sh) == 1)
+			return (1);
+	}
+	if (cmd_tree->command.redir_out != NULL && handle_redir_out(\
+		cmd_tree->command.redir_out, cmd_tree->command.append, sh, 0) == 1)
+		return (1);
+	if (cmd_tree->command.redir_in != NULL && handle_redir_in(\
+				cmd_tree->command.redir_in, sh, 0) == 1)
+		return (1);
+	return (0);
+}
+
+/* OLD HANDLE_HEREDOC */
+/*void	handle_heredoc(char *args, t_shell *sh)
+{
+	pid_t	pid;
+	char	**hd;
+	int		pipe_fd[2];
+	int		status;
+	int		i;
+
+	i = 0;
+	void (*old_sigint)(int);
+	void (*old_sigquit)(int);    
+	hd = ft_split(args, '\n');
+	if (pipe(pipe_fd) == -1)
+		return; // error
+	pid = fork();
+	if (pid == 0)
+	{
+		signal(SIGINT, signal_handle);
+		signal(SIGQUIT, SIG_IGN);
+		close(pipe_fd[0]);
+		while (hd[i])
+		{
+			bool quoted = is_quoted(hd[i]);
+			char *clean_hd = strip_quotes(hd[i]);
+			heredoc_loop(pipe_fd, clean_hd, quoted, sh);
+			free_wrap(clean_hd);
+			i++;
+		}
+		ft_free_string_array(hd);
+		close(pipe_fd[1]);
+		exit(0);
+	}
+	else
+	{
+		old_sigint = signal(SIGINT, SIG_IGN);
+		old_sigquit = signal(SIGQUIT, SIG_IGN);
+		close(pipe_fd[1]);
+		waitpid(pid, &status, 0);
+		ft_free_string_array(hd);
+		signal(SIGINT, old_sigint);
+		signal(SIGQUIT, old_sigquit);
+		if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+		{
+			g_signal_received = 1;
+			close(pipe_fd[0]);
+			return ;
+		}
+		dup2(pipe_fd[0], STDIN_FILENO);
+		close(pipe_fd[0]);
+	}
+}*/

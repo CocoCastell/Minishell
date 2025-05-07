@@ -6,13 +6,13 @@
 /*   By: sluterea <sluterea@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 18:38:07 by sluterea          #+#    #+#             */
-/*   Updated: 2025/03/31 18:38:09 by sluterea         ###   ########.fr       */
+/*   Updated: 2025/04/10 20:29:43 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-int	set_dir_error(t_shell *sh, char *path, char *curr_pwd)
+int	set_dir_error(char *path, char *curr_pwd)
 {
 	if (errno == ENOENT)
 		ft_printf("cd: no such file or directory: %s\n", path);
@@ -22,8 +22,7 @@ int	set_dir_error(t_shell *sh, char *path, char *curr_pwd)
 		ft_printf("cd: not a directory: %s\n", path);
 	else
 		ft_printf("cd: %s: %s\n", strerror(errno), path);
-	sh->error = errno;
-	return (free(curr_pwd), -1);
+	return (free(curr_pwd), 1);
 }
 
 int	set_dir_path(t_shell *sh, char *curr_pwd, char *new)
@@ -46,11 +45,11 @@ int	set_dir_path(t_shell *sh, char *curr_pwd, char *new)
 			ft_update_env(sh, s_d.set_new);
 		}
 		else
-			return (set_dir_error(sh, new, curr_pwd), free(new), -1);
+			return (set_dir_error(new, curr_pwd), free(new), -1);
 	}
 	s_d.set_old = ft_strjoin("OLDPWD=", curr_pwd);
 	ft_update_env(sh, s_d.set_old);
-	sh->dir = ft_getpwd_s();
+	sh->dir = ft_getpwd();
 	return (free(curr_pwd), free(s_d.set_old), free(s_d.set_new), 0);
 }
 
@@ -77,10 +76,12 @@ int	set_dir_home(t_shell *sh, char *curr_pwd)
 	char	*tmpenv;
 
 	tmp = ft_strdup("/home/");
+	if (!tmp)
+		return (1);
 	tmpenv = ft_getenv(sh->env, "USER");
 	home = ft_strjoin(tmp, tmpenv);
 	free_multiple(2, tmp, tmpenv, NULL);
 	if (!home)
-		return (-1);
+		return (1);
 	return (set_dir_path(sh, curr_pwd, home));
 }

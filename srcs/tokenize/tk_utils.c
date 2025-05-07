@@ -12,9 +12,33 @@
 
 #include "../../includes/minishell.h"
 
+char	*ft_add_quotes(const char *input)
+{
+	size_t	len;
+	char	*result;
+
+	if (!input)
+		return (NULL);
+	len = ft_strlen(input);
+	result = malloc(len + 3);
+	if (result == NULL)
+		return (perror("Failed to allocate memory"), NULL);
+	result[0] = '\'';
+	ft_strlcpy(result + 1, input, len + 1);
+	result[len + 1] = '\'';
+	result[len + 2] = '\0';
+	return (result);
+}
+
+/**
+ * @brief Calculates token's type.
+ * @param token t_token being checked
+ * @return enum e_type
+ */
 enum e_type	check_type(t_token *token)
 {
 	t_token	*current;
+	char	*tmp;
 
 	current = token;
 	if (!current->prev)
@@ -25,60 +49,39 @@ enum e_type	check_type(t_token *token)
 		return (COMMAND);
 	else
 	{
-		if (ft_strchr(token->str, '*'))
+		if (ft_strchr(token->str, '*') && token->type != LITERAL)
 			return (WILDCARD);
+		if (token->str[0] == '-' && token->str[1] && token->str[1] != '-')
+			return (FLAG);
+		if (token->type == LITERAL && current->prev->type == HEREDOC)
+		{
+			tmp = ft_add_quotes(token->str);
+			free_wrap(token->str);
+			token->str = tmp;
+		}
 		return (ARGUMENT);
 	}
 }
 
+/**
+ * @brief Calculates the difference between len and current position.
+ * @param parse t_parse2, Parsing structure (len, curr_pos being used)
+ * @return void (Updates diff)
+ */
 void	get_diff_curr_len(t_parse2 *parse)
 {
 	parse->diff = parse->len - parse->curr_pos;
 }
 
+/**
+ * @brief Updates current position. Necessary for the loop condition.
+ * @param parse t_parse2, Parsing structure (len, curr_pos being used)
+ * @return void (Updates current position)
+ */
 void	update_current_position(t_parse2 *parse)
 {
 	parse->curr_pos = parse->len;
 }
-
-/**
- * @brief Checks for repeated patterns ($$$, >>>, <<<, |||)
- * @param line Input string to check
- * @return The found pattern character ('$', '>', '<', '|') or 0 if none found
- */
-/*char	find_repeated_pattern(const char *line)
-{
-	const char	patterns[] = "&><|";
-	size_t		i;
-	size_t		len;
-	int			j;
-
-	i = 0;
-	if (!line)
-		return ('n');
-	len = strlen(line);
-	while (i < len - 2)
-	{
-		if (line[i] == '"' || line[i] == '\'')
-		{
-			j = line[i];
-			i++;
-			while (i < len && line[i] != j)
-				i++;
-			if (i >= len)
-				break ;
-			i++;
-			continue ;
-		}
-		if (line[i] == line[i + 1] && line[i] == line[i + 2])
-		{
-			if (strchr(patterns, line[i]))
-				return (line[i]);
-		}
-		i++;
-	}
-	return (0);
-}*/
 
 /**
  * @brief Checks for repeated character (for: $, >, <, |)
@@ -87,11 +90,8 @@ void	update_current_position(t_parse2 *parse)
  * @return 1 if is repeated, 0 if it's not
  * 
  */
-int	find_repeated_delimiter(char *l, char c)
+int	find_repeated_delimiter(char *l, char c, int i)
 {
-	size_t	i;
-
-	i = 0;
 	if (!c)
 		return (0);
 	if (l[i + 1] && l[i + 1] == c && l[i + 2] && l[i + 2] == c)

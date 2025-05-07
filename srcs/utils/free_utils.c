@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 19:57:52 by cochatel          #+#    #+#             */
-/*   Updated: 2025/03/31 17:02:59 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/14 15:20:51 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,11 @@ void	free_tree(t_node *tree)
 	tree = NULL;
 }
 
+/**
+ * @brief Free shell structure. Free input and tree.
+ * @param sh t_shell Shell structure
+ * @return void
+ */
 void	free_sh(t_shell *sh)
 {
 	if (sh->input)

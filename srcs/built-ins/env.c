@@ -13,6 +13,33 @@
 #include "../../includes/minishell.h"
 
 /**
+ * @brief Create an env copy for the current Shell
+ * @param env env being copied
+ * @return NULL or the env copy
+ */
+char	**ft_create_env(char **env)
+{
+	char	**env_cpy;
+	size_t	i;
+	size_t	j;
+
+	j = 0;
+	i = ft_arrlen(env);
+	env_cpy = (char **)malloc((i + 1) * sizeof(char *));
+	if (env_cpy == NULL)
+		return (perror("Error when allocating env memory"), NULL);
+	while (j < i)
+	{
+		env_cpy[j] = ft_strdup(env[j]);
+		if (env_cpy[j] == NULL)
+			return (perror("Error when copying env var"), NULL);
+		j++;
+	}
+	env_cpy[i] = NULL;
+	return (env_cpy);
+}
+
+/**
  * @brief Prints the env variables
  * @param args command arg (no args, no options, expects only "env" (1))
  * @param sh shell struct
@@ -24,7 +51,10 @@ int	ft_env(char **args, t_shell *sh)
 
 	i = 0;
 	if (ft_arrlen(args) != 1)
-		return (-1);
+	{
+		ft_printf("env: %s: no such file or directory\n", args[1]);
+		return (127);
+	}
 	while (sh->env[i])
 	{
 		ft_printf("%s\n", sh->env[i]);
@@ -36,21 +66,27 @@ int	ft_env(char **args, t_shell *sh)
 /**
  * @brief To get the value of the variable looked for
  * @param env environment array (sh->env)
- * @param var string being searched for
- * @return variable value (char *) or NULL if not found 
+ * @param var string being searched for. Does NOT free/modify 
+ * the var passed.
+ * @return new value (char *) or NULL if not found 
  */
 char	*ft_getenv(char **env, char *var)
 {
 	size_t		i;
 	size_t		len;
+	char		*str;
 
 	len = ft_strlen(var);
 	i = 0;
+	str = NULL;
 	while (env[i])
 	{
 		if (ft_strncmp(env[i], var, len) == 0 && env[i][len] == '=')
 		{
-			return (ft_strdup(&env[i][len + 1]));
+			str = ft_strdup(&env[i][len + 1]);
+			if (!str)
+				return (perror("alloc error"), NULL);
+			return (str);
 		}
 		i++;
 	}
@@ -58,10 +94,10 @@ char	*ft_getenv(char **env, char *var)
 }
 
 /**
- * @brief To update a specific env variable value
+ * @brief To update a specific env variable value.
  * @param sh shell struct
- * @param var string being updated
- * @return -1 if error, 0 if no updates, 1 if updated
+ * @param var string being updated. Does NOT free the var passed.
+ * @return -1 if error, 0 if no updates/ updated
  */
 int	ft_update_env(t_shell *sh, char *var)
 {
@@ -70,87 +106,21 @@ int	ft_update_env(t_shell *sh, char *var)
 	size_t	len;
 
 	if (verify_var(sh, var) == -1)
-		return (-1);
+		return (sh->error);
 	v = split_var_name(var);
 	if (!v)
-		return (-1);
+		return (1);
 	len = ft_strlen(v);
 	i = -1;
 	while (sh->env[++i])
 	{
 		if (ft_strncmp(sh->env[i], v, len) == 0 && sh->env[i][len] == '=')
 		{
-			free(sh->env[i]);
+			free_wrap(sh->env[i]);
 			sh->env[i] = ft_strdup(var);
-			return (free(v), 1);
+			return (free_wrap(v), 0);
 		}
 	}
-	return (free(v), 0);
-}
-
-/**
- * @brief To eset a variable on the env
- * @param sh shell struct
- * @param var string being added
- * @return -1 if error, 0 if added, 1 if updated
- */
-int	ft_export(t_shell *sh, char *var)
-{
-	char	**new_env;
-	int		i;
-	int		j;
-
-	i = 0;
-	j = -1;
-	if (verify_var(sh, var) == -1)
-		return (-1);
-	if (!ft_getenv(sh->env, var))
-	{
-		while (sh->env[i] != NULL)
-			i++;
-		new_env = (char **)malloc((i + 2) * sizeof(char *));
-		if (new_env == NULL)
-			return (perror("Error when allocating env memory"), -1);
-		while (++j < i)
-			new_env[j] = ft_strdup(sh->env[j]);
-		new_env[i] = ft_strdup(var);
-		new_env[++i] = NULL;
-		ft_free_string_array(sh->env);
-		sh->env = new_env;
-	}
-	else
-		return (ft_update_env(sh, var));
-	return (0);
-}
-
-/**
- * @brief To delete specified variable from the env
- * @param sh shell struct
- * @param var string being deleted
- * @return -1 if error, 1 if updated
- */
-int	ft_unset(t_shell *sh, char *var)
-{
-	t_unset	u;
-
-	if (init_unset_vars(&u, sh, var) == -1)
-		return (-1);
-	while (sh->env[++u.i])
-	{
-		if (ft_strncmp(sh->env[u.i], u.v, u.len) == 0 && \
-		sh->env[u.i][u.len] == '=')
-			continue ;
-		else
-		{
-			u.env_cpy[u.j] = ft_strdup(sh->env[u.i]);
-			if (!u.env_cpy[u.j])
-				return (ft_free_string_array(u.env_cpy), free(u.v), \
-				perror("Error when duplicating env value"), -1);
-			u.j++;
-		}
-	}
-	u.env_cpy[u.j] = NULL;
-	ft_free_string_array(sh->env);
-	sh->env = u.env_cpy;
-	return (free(u.v), 1);
+	sh->error = 0;
+	return (free_wrap(v), 0);
 }

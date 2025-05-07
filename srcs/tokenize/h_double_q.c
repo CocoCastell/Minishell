@@ -12,12 +12,14 @@
 
 #include "../../includes/minishell.h"
 
-/* void	handle_wildcard(char *line, t_parse2 *parse, t_token **tokens) */
-/* { */
-	/* char	*str; */
-
-/* } */
-
+/**
+ * @brief Handles retrieving of env variable.
+ * @param line Input string. 
+ * @param parse t_parse2, Parsing structure (delimiters, len, 
+ * curr_pos and diff being used)
+ * @param sh t_shell Struct (env and error being used)
+ * @return env var value
+ */
 char	*handle_env_var_quote(char *line, t_parse2 *parse, t_shell *sh)
 {
 	t_var_content	var;
@@ -46,6 +48,11 @@ char	*handle_env_var_quote(char *line, t_parse2 *parse, t_shell *sh)
 	return (var.value);
 }
 
+/**
+ * @brief Creates a string out of a char. 'c' -> "c"
+ * @param c Char to use
+ * @return "c" string
+ */
 char	*ft_char_to_str(char c)
 {
 	char	*str;
@@ -58,6 +65,14 @@ char	*ft_char_to_str(char c)
 	return (str);
 }
 
+/**
+ * @brief Handles the double quotes
+ * @param line Input string. 
+ * @param p t_parse2, Parsing structure (len being used)
+ * @param d t_h_d handle double Struct (all being used)
+ * @param sh t_shell Struct
+ * @return 1 on creation, -1 on error
+ */
 static void	norm_split_condition(char *line, t_parse2 *p, t_h_d *d, t_shell *sh)
 {
 	if (line[p->len] == '$')
@@ -80,6 +95,14 @@ static void	norm_split_condition(char *line, t_parse2 *p, t_h_d *d, t_shell *sh)
 	update_current_position(p);
 }
 
+/**
+ * @brief Handles the double quotes
+ * @param line Input string. 
+ * @param parse t_parse2, Parsing structure (len being used)
+ * @param tk t_token array being updated
+ * @param sh t_shell Struct
+ * @return 1 on creation, -1 on error
+ */
 int	handle_d_q(char *line, t_parse2 *parse, t_token **tk, t_shell *sh)
 {
 	t_h_d	d;
@@ -88,6 +111,19 @@ int	handle_d_q(char *line, t_parse2 *parse, t_token **tk, t_shell *sh)
 	parse->len++;
 	while (line[parse->len] && line[parse->len] != '\"')
 		norm_split_condition(line, parse, &d, sh);
+	if (line[parse->len] != '\"')
+	{
+		free(d.str);
+		ft_printf("msh: Syntax error: Unterminated quoted string `\"'\n");
+		return (-1);
+	}
+	if (line[parse->len - 1] == '\"')
+	{
+		parse->len++;
+		parse->empty = 0;
+		return (0);
+	}
+	parse->len++;
 	add_token(tk, d.str, UNKNOWN);
 	return (1);
 }

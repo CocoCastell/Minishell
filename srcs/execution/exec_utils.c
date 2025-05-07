@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 19:14:16 by cochatel          #+#    #+#             */
-/*   Updated: 2025/03/27 17:58:35 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/10 19:36:07 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,5 +67,23 @@ void	*get_path(char *command, char **envp)
 
 void	ft_sorpresa(void)
 {
-	printf("Ronaldo\n");
+	printf("🩵🤍🩵 🇦🇷 MESSI 🧉 🇦🇷 🩵🤍🩵\n");
+}
+
+bool	is_quoted(char *s)
+{
+	size_t	len;
+
+	len = ft_strlen(s);
+	return (len >= 2 && s[0] == '\'' && s[len - 1] == '\'');
+}
+
+char	*strip_quotes(char *s)
+{
+	size_t	len;
+
+	len = ft_strlen(s);
+	if (is_quoted(s))
+		return (ft_substr(s, 1, len - 2));
+	return (ft_strdup(s));
 }

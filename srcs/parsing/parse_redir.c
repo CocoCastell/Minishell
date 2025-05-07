@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 19:56:14 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/05 18:57:05 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/14 16:12:47 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ static void	put_redir(char **cmd, t_token **tk)
 	{
 		tmp = ft_strjoin("\n", (*tk)->str);
 		if (tmp == NULL)
-			return ; //error
+			return ;
 		tmp2 = ft_strjoin(*cmd, tmp);
 		free_wrap(*cmd);
 		free_wrap(tmp);
@@ -44,7 +44,7 @@ static void	put_append(char **cmd, char *app)
 	{
 		tmp = ft_strjoin("\n", app);
 		if (tmp == NULL)
-			return ; //error
+			return ;
 		tmp2 = ft_strjoin(*cmd, tmp);
 		free_wrap(*cmd);
 		free_wrap(tmp);

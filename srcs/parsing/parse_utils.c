@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 19:56:14 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/05 18:51:10 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/04/10 17:52:48 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,5 +50,34 @@ int	is_part_of_cmd(t_token *token)
 		return (3);
 	if (token->type == APPEND || token->type == HEREDOC)
 		return (3);
+	return (0);
+}
+
+static void	join_token(t_token *tk_to_add, t_token *tk)
+{
+	if (tk == NULL || tk_to_add == NULL)
+		return ;
+	while (tk->next != NULL)
+		tk = tk->next;
+	tk->next = tk_to_add;
+}
+
+int	ask_end_cmd(t_token **tk, t_shell *sh)
+{
+	char	*input;
+	t_token	**end_tk;
+
+	while (1)
+	{
+		input = readline(">");
+		if (input == NULL)
+			return (-1);
+		end_tk = tokenize(input, sh);
+		free_wrap(input);
+		if (end_tk != NULL)
+			break ;
+	}
+	join_token(*end_tk, *tk);
+	free_wrap(end_tk);
 	return (0);
 }

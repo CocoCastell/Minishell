@@ -1,0 +1,14 @@
+total 128
+drwxr-xr-x 7 corentin corentin  4096 Apr 20 13:59 [0m[01;38;2;115;173;225m.[0m
+drwxr-xr-x 5 corentin corentin  4096 Apr 19 20:19 [01;38;2;115;173;225m..[0m
+-rw-r--r-- 1 corentin corentin  1775 Apr 19 20:19 [38;2;255;255;255mMakefile[0m
+-rw-r--r-- 1 corentin corentin   647 Apr 19 20:19 [38;2;255;255;255mfix.txt[0m
+drwxr-xr-x 2 corentin corentin  4096 Apr 19 21:47 [01;38;2;115;173;225mincludes[0m
+drwxr-xr-x 7 corentin corentin  4096 Apr 19 20:21 [01;38;2;115;173;225mlibft[0m
+-rwxr-xr-x 1 corentin corentin 70904 Apr 20 13:59 [01;38;2;247;209;23mminishell[0m
+drwxr-xr-x 9 corentin corentin  4096 Apr 20 13:59 [01;38;2;115;173;225mobjs[0m
+drwxr-xr-x 9 corentin corentin  4096 Apr 20 13:57 [01;38;2;115;173;225msrcs[0m
+drwxr-xr-x 2 corentin corentin  4096 Apr 20 13:58 [01;38;2;115;173;225mtest[0m
+-rw-r--r-- 1 corentin corentin  5096 Apr 19 20:19 [38;2;255;255;255mtest_minishell.sh[0m
+-rw-r--r-- 1 corentin corentin  2177 Apr 19 20:19 [38;2;255;255;255mtest_minishell_path.sh[0m
+-rw-r--r-- 1 corentin corentin  6010 Apr 19 20:19 [38;2;255;255;255mtest_split.sh[0m

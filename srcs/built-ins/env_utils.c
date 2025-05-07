@@ -6,7 +6,7 @@
 /*   By: sluterea <sluterea@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/29 19:05:53 by sluterea          #+#    #+#             */
-/*   Updated: 2025/03/29 19:05:55 by sluterea         ###   ########.fr       */
+/*   Updated: 2025/04/14 15:50:37 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ char	*split_var_name(char *var)
 	size_t	i;
 	char	*v;
 
+	if (!var)
+		return (NULL);
 	i = 0;
 	while (var[i] != '=' && var[i] != '\0')
 		i++;
@@ -55,58 +57,72 @@ char	*split_var_name(char *var)
  */
 int	verify_var(t_shell *sh, char *v)
 {
-	if (!sh || !sh->env || !v || !ft_strchr(v, '='))
-		return (-1);
-	if (v[0] == '=')
-		return (ft_printf("minishell: export: : bad variable name\n"), -1);
-	return (1);
-}
-
-/**
- * @brief Create an env copy for the current Shell
- * @param env env being copied
- * @return NULL or the env copy
- */
-char	**ft_create_env(char **env)
-{
-	char	**env_cpy;
-	size_t	i;
-	size_t	j;
-
-	j = 0;
-	i = ft_arrlen(env);
-	env_cpy = (char **)malloc((i + 1) * sizeof(char *));
-	if (env_cpy == NULL)
-		return (perror("Error when allocating env memory"), NULL);
-	while (j < i)
+	if (!sh || !sh->env)
 	{
-		env_cpy[j] = ft_strdup(env[j]);
-		if (env_cpy[j] == NULL)
-			return (perror("Error when copying env var"), NULL);
-		j++;
+		sh->error = 1;
+		return (-1);
 	}
-	env_cpy[i] = NULL;
-	return (env_cpy);
+	if (is_valid_var_name(v) == -1)
+	{
+		sh->error = 1;
+		ft_printf("msh: export: `%s': not a valid identifier\n", v);
+		return (-1);
+	}
+	if (!ft_strchr(v, '='))
+	{
+		sh->error = 0;
+		return (-1);
+	}
+	return (0);
 }
 
 /**
- * @brief Helper to initialize variables for unset function
- * @param u t_unset struct
- * @param sh t_shell struct
- * @param v var name (char *) being split
- * @return -1 if error, 1 if done
+ * @brief To get the value of the variable looked for
+ * @param env environment array (sh->env)
+ * @param var string being searched for. Does NOT free/modify 
+ * the var passed.
+ * @return 1 if found or 0 if not found 
  */
-int	init_unset_vars(t_unset *u, t_shell *sh, char *var)
+int	ft_isinenv(char **env, char *var)
 {
-	u->v = split_var_name(var);
-	if (!u->v)
+	size_t		i;
+	size_t		len;
+
+	len = ft_strlen(var);
+	i = 0;
+	while (env[i])
+	{
+		if (ft_strncmp(env[i], var, len) == 0 && env[i][len] == '=')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+/**
+ * @brief Helper to verify if the env var name is valid,
+ * @param v var name (char *) being verified
+ * @return -1 if error, 1 if verified, 2 if flag
+ */
+int	is_valid_var_name(char *str)
+{
+	size_t	i;
+
+	if (!str || !str[0])
 		return (-1);
-	u->len = ft_strlen(u->v);
-	u->i = ft_arrlen(sh->env);
-	u->env_cpy = (char **)malloc((u->i) * sizeof(char *));
-	if (u->env_cpy == NULL)
-		return (perror("Error when allocating env memory"), -1);
-	u->i = -1;
-	u->j = 0;
-	return (1);
+	if (!(ft_isalpha(str[0]) || str[0] == '_'))
+		return (-1);
+	i = 1;
+	while (str[i] && str[i] != '=')
+	{
+		if (!(ft_isalnum(str[i]) || str[i] == '_'))
+		{
+			if (str[i] == '+' && str[i + 1] && str[i + 1] == '=')
+				return (1);
+			else
+				return (-1);
+		}
+		i++;
+	}
+	return (0);
 }
