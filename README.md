@@ -18,14 +18,14 @@ Then, run the programm with
 
 The code is divided into three main parts:  
 
-Tokenization:  
+•**Tokenization:**  
 Splits the input written by the user into individual tokens (commands, arguments, operators...).  
 
-Parsing:  
+•**Parsing:**  
 Parses the tokens, checks for syntax errors and redirection issues.  
 We use a recursive binary tree as the main data structure to represent the command structure.  
 
-Execution:  
+•**Execution:**  
 Executes the parsed commands, handling pipes, logical operators (AND, OR), and implementing built-in shell commands.  
 
 # Grade
