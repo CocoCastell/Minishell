@@ -80,7 +80,7 @@ void	put_wildcard(char **arg_line, t_token **tk)
 	free_wrap(*arg_line);
 	if ((*tk)->str[0] == '*')
 		is_first_wcard = true;
-	if (is_first_wcard == false && (*tk)->str[ft_strlen((*tk)->str)] != '*')
+	if (is_first_wcard == false && (*tk)->str[ft_strlen((*tk)->str) - 1] != '*')
 		wildcard_files = ft_strdup((*tk)->str);
 	else
 		wildcard_files = parse_wildcard((*tk)->str, is_first_wcard);

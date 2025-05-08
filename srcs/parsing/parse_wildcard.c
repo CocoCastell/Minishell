@@ -55,11 +55,13 @@ void	check_if_no_matching(char *wildcard_str, char **files)
 
 char	*parse_wildcard(char *w_str, bool is_first_wcard)
 {
+	printf("Check\n");
 	DIR				*curr_dir;
 	char			*files;
 	char			*file;
 	struct dirent	*dir;
 
+	printf("str: %s\n", w_str);
 	files = NULL;
 	curr_dir = opendir(".");
 	if (curr_dir == NULL)

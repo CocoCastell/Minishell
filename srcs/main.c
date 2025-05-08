@@ -72,12 +72,15 @@ int	main(int argc, char *argv[], char *env[])
 	{
 		manage_signals();
 		m.sh.input = init_prompt(ft_shorten_dir(m.sh.dir), &m.sh);
-		m.sh.tk = tokenize(m.sh.input, &m.sh);
-		if (m.sh.tk)
-			handle_tokens_and_execute(&m);
-		else
-			free_wrap(m.sh.input);
-		m.sh.input = NULL;
+		if (m.sh.input != NULL)
+		{
+			m.sh.tk = tokenize(m.sh.input, &m.sh);
+			if (m.sh.tk)
+				handle_tokens_and_execute(&m);
+			else
+				free_wrap(m.sh.input);
+			m.sh.input = NULL;
+		}
 	}
 	ft_free_string_array(m.sh.env);
 	return ((void)argc, (void)argv, EXIT_SUCCESS);

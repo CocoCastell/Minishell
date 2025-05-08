@@ -34,7 +34,7 @@ int	handle_redir(t_cmd_node *cmd, t_token **tk, t_shell *sh, int fd)
 		return (-1);
 	*tk = (*tk)->next;
 	if (((*tk)->prev->type == REDIR_OUT || (*tk)->prev->type == APPEND) && \
-		handle_redir_out(cmd, (*tk)->type, (*tk)->str) == -1)
+		handle_redir_out(cmd, (*tk)->prev->type, (*tk)->str) == -1)
 		return (-4);
 	else if ((*tk)->prev->type == REDIR_IN)
 	{

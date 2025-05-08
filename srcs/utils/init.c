@@ -36,9 +36,9 @@ void	*display_prompt(char *curr_dir, t_shell *sh)
 /**
  * @brief Adds the last input to the history if valid
  * @param input string representing the input
- * @return void
+ * @return 0 if not an empty string, 1 otherwise
  */
-void	ft_add_history(char *input)
+int	ft_add_history(char *input)
 {
 	int	i;
 	int	is_char;
@@ -52,14 +52,15 @@ void	ft_add_history(char *input)
 		i++;
 	}
 	if (is_char == 1)
-		add_history(input);
+		return(add_history(input), 0);
+	return (1);
 }
 
 /**
  * @brief Inits the prompt for minishell. also exits on empty input (ctrl + D).
  * @param curr_dir string representing the current dir
  * @param sh t_shell structure to init
- * @return input string
+ * @return input string or NULL if only spaces
  */
 char	*init_prompt(char *curr_dir, t_shell *sh)
 {
@@ -72,8 +73,9 @@ char	*init_prompt(char *curr_dir, t_shell *sh)
 		ft_free_string_array(sh->env);
 		exit(0);
 	}
-	ft_add_history(input);
-	return (input);
+	if (ft_add_history(input) == 0)
+		return (input);
+	return (NULL);
 }
 
 /**
