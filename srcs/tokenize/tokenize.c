@@ -56,8 +56,10 @@ t_token	*add_token(t_token **tokens, char *str, enum e_type type)
  * @param sh t_shell shell structure
  * @return void
  */
-void	h_del(char *l, t_parse2 *p, t_token **tk, t_shell *sh)
+void	h_del(char *l, t_parse2 *p, t_token **tk)
 {
+	if (!(l[p->len] == ' ' || (l[p->len] >= 9 && l[p->len] < 14)))
+		p->prev_heredoc = 0;
 	if (l[p->len] == ' ' || (l[p->len] >= 9 && l[p->len] < 14))
 		p->len++;
 	else if (l[p->len] == '|')
@@ -68,10 +70,6 @@ void	h_del(char *l, t_parse2 *p, t_token **tk, t_shell *sh)
 		p->flag = hand_r_in(l, p, tk);
 	else if (l[p->len] == '>')
 		p->flag = hand_r_out(l, p, tk);
-	else if (l[p->len] == '\'')
-		p->flag = handle_literal(l, p, tk);
-	else if (l[p->len] == '"')
-		p->flag = handle_d_q(l, p, tk, sh);
 	else if (l[p->len] == '(' || l[p->len] == ')')
 		p->flag = handle_brackets(l, p, tk);
 }
@@ -93,6 +91,9 @@ int	init_tokenize_parse(t_parse2 *p)
 	p->error = 0;
 	p->diff = 0;
 	p->empty = 0;
+	p->prev_heredoc = 0;
+	p->is_dquote = 0;
+	p->is_first_tk = 0;
 	return (1);
 }
 
@@ -126,7 +127,7 @@ t_token	**tokenize(char *line, t_shell *sh)
 	while (line[p_info.len] != '\0')
 	{
 		if (ft_strchr(p_info.delimiters, line[p_info.len]))
-			h_del(line, &p_info, tokens, sh);
+			h_del(line, &p_info, tokens);
 		else
 			p_info.flag = handle_str(line, &p_info, tokens, sh);
 		update_current_position(&p_info);

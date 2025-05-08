@@ -80,6 +80,7 @@ int	hand_r_in(char *line, t_parse2 *parse, t_token **tokens)
 	{
 		add_token(tokens, ft_substr(line, parse->curr_pos, 2), HEREDOC);
 		parse->len++;
+		parse->prev_heredoc = 1;
 	}
 	else
 		add_token(tokens, ft_substr(line, parse->curr_pos, 1), REDIR_IN);

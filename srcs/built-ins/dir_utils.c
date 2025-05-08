@@ -6,7 +6,7 @@
 /*   By: sluterea <sluterea@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 18:38:07 by sluterea          #+#    #+#             */
-/*   Updated: 2025/04/10 20:29:43 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/07 17:33:32 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 int	set_dir_error(char *path, char *curr_pwd)
 {
 	if (errno == ENOENT)
-		ft_printf("cd: no such file or directory: %s\n", path);
+		ft_printf("msh: cd: %s: No such file or directory\n", path);
 	else if (errno == EACCES)
-		ft_printf("cd: permission denied: %s\n", path);
+		ft_printf("msh: cd: %s: Permission denied\n", path);
 	else if (errno == ENOTDIR)
-		ft_printf("cd: not a directory: %s\n", path);
+		ft_printf("msh: cd: %s: Not a directory\n", path);
 	else
-		ft_printf("cd: %s: %s\n", strerror(errno), path);
+		ft_printf("msh: cd: %s: %s\n", strerror(errno), path);
 	return (free(curr_pwd), 1);
 }
 

@@ -6,11 +6,30 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 19:14:16 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/10 19:36:07 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/06 20:06:21 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+
+int	change_in_out(t_node *cmd_tree, int is_builtin)
+{
+	if (cmd_tree->command.redir_in > -1)
+	{
+		if (dup2(cmd_tree->command.redir_in, STDIN_FILENO) == -1)
+			return (printf("Dup2 error\n"), 1);
+		if (is_builtin == false)
+			close(cmd_tree->command.redir_in);
+	}
+	if (cmd_tree->command.redir_out > -1)
+	{
+		if (dup2(cmd_tree->command.redir_out, STDOUT_FILENO) == -1)
+			return (printf("Dup2 error\n"), 1);
+		if (is_builtin == false)
+			close(cmd_tree->command.redir_out);
+	}
+	return (0);
+}
 
 void	*find_path(char **path, char *command)
 {
@@ -48,6 +67,12 @@ void	*get_path(char *command, char **envp)
 	int		i;
 
 	i = 0;
+	if (command[0] == '.' && command[1] == '/')
+	{
+		if (access(command, F_OK | X_OK) == 0)
+			return (command);
+		return (NULL);
+	}
 	if (access(command, F_OK | X_OK) == 0)
 		return (command);
 	while (envp[i] && ft_strnstr(envp[i], "PATH=", 5) == NULL)
@@ -61,13 +86,7 @@ void	*get_path(char *command, char **envp)
 		exit_error("Error: null pointer", 1);
 	}
 	full_path = find_path(path, command);
-	ft_free_string_array(path);
-	return (full_path);
-}
-
-void	ft_sorpresa(void)
-{
-	printf("🩵🤍🩵 🇦🇷 MESSI 🧉 🇦🇷 🩵🤍🩵\n");
+	return (ft_free_string_array(path), full_path);
 }
 
 bool	is_quoted(char *s)

@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 15:55:32 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/14 15:56:28 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:39:41 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,8 @@ t_node	*parse_bracket(t_token **tk, t_shell *sh)
 	left = NULL;
 	if (*tk != NULL && is_part_of_cmd(*tk) > 1)
 	{
-		left = parse_command(tk);
-		if (left == NULL || left->error == 1)
+		left = parse_command(tk, sh);
+		if (left == NULL || left->error > 0)
 			return (left);
 	}
 	else if (*tk == NULL || (*tk)->type != O_BRACKET)
@@ -75,7 +75,7 @@ t_node	*parse_pipe(t_token **token, t_shell *sh)
 	t_p_norm	pn;
 
 	pn.left = parse_bracket(token, sh);
-	if (pn.left == NULL || pn.left->error == 1)
+	if (pn.left == NULL || pn.left->error > 0)
 		return (pn.left);
 	while (*token != NULL && (*token)->type == PIPE)
 	{
@@ -86,7 +86,7 @@ t_node	*parse_pipe(t_token **token, t_shell *sh)
 		if (*token != NULL && is_part_of_cmd(*token) == 0)
 			return (synthax_error(pn.left, 1, token));
 		pn.right = parse_bracket(token, sh);
-		if (pn.right == NULL || pn.right->error == 1)
+		if (pn.right == NULL || pn.right->error > 0)
 			return (free_tree(pn.left), pn.right);
 		if (make_node(&pn.op_node, PIPE_NODE) == -1)
 			return (free_wrap(pn.left), error_malloc(pn.right));
@@ -103,7 +103,7 @@ t_node	*parsing(t_token **tk, t_shell *sh)
 	if (init_parse_error(tk) == 1)
 		return (pn.left);
 	pn.left = parse_pipe(tk, sh);
-	if (pn.left == NULL || pn.left->error == 1)
+	if (pn.left == NULL || pn.left->error > 0)
 		return (pn.left);
 	while (*tk != NULL && ((*tk)->type == AND || (*tk)->type == OR))
 	{
@@ -115,7 +115,7 @@ t_node	*parsing(t_token **tk, t_shell *sh)
 		if (*tk != NULL && is_part_of_cmd(*tk) == 0)
 			return (synthax_error(pn.left, 1, tk));
 		pn.right = parse_pipe(tk, sh);
-		if (pn.right == NULL || pn.right->error == 1)
+		if (pn.right == NULL || pn.right->error > 0)
 			return (free_tree(pn.left), pn.right);
 		if (make_node(&pn.op_node, pn.token_type) == -1)
 			return (free_wrap(pn.left), error_malloc(pn.right));

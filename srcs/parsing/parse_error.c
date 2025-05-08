@@ -6,16 +6,19 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 19:56:14 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/14 16:12:13 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:54:27 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
+// flag = -2 para error de heredoc
 t_node	*cmd_err(int flag, t_node *cmd_node, char **arg_ln, t_token **tk)
 {
 	free_wrap(*arg_ln);
 	cmd_node->type = PIPE_NODE;
+	if (flag == -2)
+		return (synthax_error(cmd_node, -2, tk));
 	if ((*tk)->next == NULL)
 		return (synthax_error(cmd_node, 4, tk));
 	if (is_part_of_cmd((*tk)->next) == 3 || flag == 1)
@@ -46,6 +49,8 @@ t_node	*synthax_error(t_node *node, int flag, t_token **tok)
 	if (node == NULL)
 		make_node(&node, PIPE_NODE);
 	node->error = 1;
+	if (flag == -2)
+		node->error = 130;
 	return (node);
 }
 

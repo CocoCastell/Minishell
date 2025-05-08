@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 19:56:14 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/10 17:52:48 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/06 19:43:55 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,11 @@ void	init_cmd_data(t_cmd_node *cmd)
 {
 	cmd->command = NULL;
 	cmd->args = NULL;
-	cmd->redir_in = NULL;
-	cmd->redir_out = NULL;
 	cmd->heredoc = NULL;
 	cmd->append = NULL;
+	cmd->redir_in = -2;
+	cmd->redir_out = -2;
+	cmd->redir_err = 0;
 }
 
 int	is_part_of_cmd(t_token *token)

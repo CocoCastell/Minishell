@@ -12,6 +12,12 @@
 
 #include "../../includes/minishell.h"
 
+/**
+ * @brief Prints the binary tree for debugging
+ * @param node t_node 
+ * @param depth 
+ * @return void
+ */
 void	print_tree(t_node *node, int depth)
 {
 	int	i;

@@ -1,3 +1,6 @@
+.SILENT:
+.PHONY: all clean fclean re
+
 # Variables
 
 NAME		=	libft.a
@@ -78,18 +81,16 @@ WHITE		= 	\033[0;97m
 all:		$(NAME)
 
 $(NAME):	$(OBJ)
-	@ar -rcs $@ $^
+	ar -rcs $@ $^
 
 $(OBJS_DIR)%.o:%.c	$(INC) Makefile
-	@mkdir -p $(dir $@)
-	@cc $(CFLAGS) -c $< -o $@
+	mkdir -p $(dir $@)
+	cc $(CFLAGS) -c $< -o $@
 
 clean:
-	@rm -rf $(OBJS_DIR)
+	rm -rf $(OBJS_DIR)
 
 fclean: clean
-	@rm -f $(NAME)
+	rm -f $(NAME)
 
 re: fclean all
-
-.PHONY: all clean fclean re

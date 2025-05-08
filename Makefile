@@ -1,4 +1,4 @@
-.SILENT:
+# .SILENT:
 .PHONY: all clean fclean re
 
 NAME		=	minishell
@@ -28,13 +28,14 @@ SRCS		=	main.c \
 				parsing/parse_wildcard.c \
 				parsing/parse_redir.c \
 				parsing/h_double_q_heredoc.c \
+				parsing/parse_n_split.c \
 				tokenize/tokenize.c \
 				tokenize/tk_utils.c \
-				tokenize/tk_utils_env_var.c \
-				tokenize/h_double_q.c \
+				tokenize/h_env_utils.c \
+				tokenize/h_env_inline.c \
 				tokenize/h_redir_pipes.c \
-				tokenize/h_str_flag_env.c \
-				tokenize/h_nospace.c \
+				tokenize/h_str.c \
+				tokenize/h_quotes.c \
 				built-ins/env.c \
 				built-ins/dir.c \
 				built-ins/echo.c \
@@ -47,11 +48,9 @@ SRCS		=	main.c \
 				execution/exec_utils.c \
 				execution/exec_error.c \
 				execution/exec_heredoc.c \
-				execution/exec_redir.c \
 				execution/exec_ope.c \
 				execution/exec.c \
 				signals/signals.c \
-				debug/ft_readline.c \
 				debug/print_tokens.c \
 				debug/print_tree.c
 
@@ -71,7 +70,7 @@ $(NAME): $(OBJS) $(LIBFT_PATH) Makefile $(INC)minishell.h
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LDFLAGS) $(LIBFT_PATH)
 
 lib:
-	make -sC $(LIBFT_DIR)
+	make -C $(LIBFT_DIR)
 
 $(OBJ_DIR)%.o: $(SRC_DIR)%.c
 	mkdir -p $(dir $@)

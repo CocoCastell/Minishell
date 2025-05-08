@@ -6,7 +6,7 @@
 /*   By: sluterea <sluterea@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:58:29 by sluterea          #+#    #+#             */
-/*   Updated: 2025/04/14 13:53:01 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/04 15:16:12 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	is_flag_n(char *str)
 	size_t	i;
 
 	i = 0;
-	if (!str || (str[i++] && str[i] != 'n'))
+	if (!str || !*str || (str[i++] && str[i] != 'n'))
 		return (0);
 	while (str[i] != '\0')
 	{
@@ -84,6 +84,7 @@ int	ft_echo(char **args)
 		return (ft_printf("\n"), 0);
 	if (is_flag_n(args[1]))
 	{
+		e.i++;
 		e.new_line = 0;
 		while (args[e.i] && is_flag_n(args[e.i]))
 			e.i++;

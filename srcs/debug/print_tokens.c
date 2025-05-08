@@ -12,6 +12,11 @@
 
 #include "../../includes/minishell.h"
 
+/**
+ * @brief Prints the tokens, for debugging
+ * @param result t_token **list 
+ * @return void
+ */
 void	print_tokens(t_token **result)
 {
 	t_token	*current;

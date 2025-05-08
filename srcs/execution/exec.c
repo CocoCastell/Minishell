@@ -6,12 +6,16 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/31 18:42:43 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/22 11:31:05 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/08 14:09:33 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
+/**
+ * @brief Check if the given command is a builtin and executes it if yes
+ * @return 2 if it is not a builtin, the builtin's return if it is
+ */
 int	exec_builtin(t_node *tree, t_shell *sh, int error)
 {
 	if (!ft_strncmp(tree->command.command, "echo", 5))
@@ -37,18 +41,25 @@ int	exec_builtin(t_node *tree, t_shell *sh, int error)
 	return (2);
 }
 
+/**
+ * @brief Call the function to apply the possible rendirections
+ *		  Get the absolute path of the command
+ *		  Execute the command if the path exists
+ * @return 2 126, 127 in case of error
+ *		   the exit return if the path exists
+ */
 void	check_and_exec(t_node *cmd_tree, t_shell *sh)
 {
 	char	*path;
 
+	change_in_out(cmd_tree, false);
 	path = get_path(cmd_tree->command.command, sh->env);
 	if (path == NULL)
 	{
 		ft_free_string_array(sh->env);
 		if (errno == ENOENT)
 		{
-			printf(BL"msh: %s: command not found\n"DEF, \
-					cmd_tree->command.command);
+			printf("msh: %s:command not found\n", cmd_tree->command.command);
 			free_sh(sh);
 			exit(127);
 		}
@@ -59,31 +70,60 @@ void	check_and_exec(t_node *cmd_tree, t_shell *sh)
 		exit_error(BL"msh: execution error"DEF, 127);
 }
 
+/**
+ * @brief Saves the standards IN/OUT, apply possible redireccions changes
+ *        Put back the standards IN/OUT and call the function to check if
+ *        the command is a built-in
+ * @return 0 is case of error or if the command was a built-in
+ *         1 if the command is not a builtin
+ */
 int	handle_builtin(t_node *cmd_tree, t_shell *sh)
 {
 	int	res;
+	int	saved_std[2];
 
+	saved_std[0] = dup(STDIN_FILENO);
+	saved_std[1] = dup(STDOUT_FILENO);
+	if (change_in_out(cmd_tree, true) == -1)
+		return (0);
 	res = exec_builtin(cmd_tree, sh, 0);
+	if (dup2(saved_std[0], STDIN_FILENO) == -1)
+	{
+		sh->error = 1;
+		return (close(saved_std[0]), close(saved_std[1]), 0);
+	}
+	close(saved_std[0]);
+	if (dup2(saved_std[1], STDOUT_FILENO) == -1)
+	{
+		sh->error = 1;
+		return (close(saved_std[1]), 0);
+	}
 	if (res != 2)
 	{
 		sh->error = res;
-		return (0);
+		return (close(saved_std[1]), 0);
 	}
-	return (1);
+	return (close(saved_std[1]), 1);
 }
 
+/**
+ *@brief Call the function to execute built-in if it is
+ *		 If it is not a built-in, call the execute command if
+ *		 it is already in a pipe, if not it forks before
+ *@return 0 in case of sucess
+ *		  1 in case of error
+ */
 int	exec_command(t_node *cmd_tree, t_shell *sh, bool in_pipe)
 {
 	t_ec	ec;
 
 	ec.old_sigint = signal(SIGINT, handle_fork_sig);
 	ec.old_sigquit = signal(SIGQUIT, handle_fork_sig);
-	if (cmd_tree->command.command == NULL)
-		return (1);
 	if (handle_builtin(cmd_tree, sh) == 0)
 		return (0);
 	if (in_pipe == true)
-		check_and_exec(cmd_tree, sh);
+		return (check_and_exec(cmd_tree, sh), 1);
+	(void)in_pipe;
 	ec.pid = fork();
 	if (ec.pid == -1)
 		return (perror("Fork error"), 1);
@@ -97,22 +137,22 @@ int	exec_command(t_node *cmd_tree, t_shell *sh, bool in_pipe)
 	return (signal(SIGINT, ec.old_sigint), signal(SIGQUIT, ec.old_sigquit), 0);
 }
 
+/**
+ *@brief Handle recursively the binary tree of commands, in hierarchical order,
+ *		 and executes each nodes based on its type
+ *		 If the there was previously a redir error (wich doesnt stop the
+ *		 compilation) and the node is a command, it skips the node;
+ *@return void
+ */
 void	recursive_exec(t_node **cmd_tree, t_shell *sh, bool in_pipe)
 {
-	int		saved_std[2];
-	t_ec	ec;
-
-	ec.old_sigint = signal(SIGINT, handle_others);
-	// ec.old_sigquit = signal(SIGQUIT, handle_fork_sig);
-	if ((*cmd_tree)->type == CMD_NODE)
+	if ((*cmd_tree)->type == CMD_NODE && (*cmd_tree)->command.redir_err == 1)
 	{
-		saved_std[0] = dup(STDIN_FILENO);
-		saved_std[1] = dup(STDOUT_FILENO);
-		if (exec_redir(*cmd_tree, sh) == 0)
-			exec_command(*cmd_tree, sh, in_pipe);
-		dup2(saved_std[0], STDIN_FILENO);
-		dup2(saved_std[1], STDOUT_FILENO);
+		sh->error = 1;
+		return ;
 	}
+	if ((*cmd_tree)->type == CMD_NODE && (*cmd_tree)->command.command != NULL)
+		exec_command(*cmd_tree, sh, in_pipe);
 	if ((*cmd_tree)->type == PIPE_NODE)
 		exec_pipe(cmd_tree, sh, in_pipe);
 	if ((*cmd_tree)->type == AND_NODE)
@@ -121,6 +161,4 @@ void	recursive_exec(t_node **cmd_tree, t_shell *sh, bool in_pipe)
 		exec_or(cmd_tree, sh, in_pipe);
 	if (sh->error == 256)
 		sh->error = 1;
-	signal(SIGINT, ec.old_sigint);
-	// signal(SIGQUIT, ec.old_sigquit);
 }

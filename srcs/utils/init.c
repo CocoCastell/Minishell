@@ -6,12 +6,18 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 15:55:32 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/14 15:55:58 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/08 14:12:23 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+/**
+ * @brief Displays the prompt with colors.
+ * @param curr_dir string representing the current dir
+ * @param sh t_shell structure to init
+ * @return input string
+ */
 void	*display_prompt(char *curr_dir, t_shell *sh)
 {
 	char	*input;
@@ -27,6 +33,11 @@ void	*display_prompt(char *curr_dir, t_shell *sh)
 	return (input);
 }
 
+/**
+ * @brief Adds the last input to the history if valid
+ * @param input string representing the input
+ * @return void
+ */
 void	ft_add_history(char *input)
 {
 	int	i;
@@ -44,6 +55,12 @@ void	ft_add_history(char *input)
 		add_history(input);
 }
 
+/**
+ * @brief Inits the prompt for minishell. also exits on empty input (ctrl + D).
+ * @param curr_dir string representing the current dir
+ * @param sh t_shell structure to init
+ * @return input string
+ */
 char	*init_prompt(char *curr_dir, t_shell *sh)
 {
 	char	*input;
@@ -59,9 +76,13 @@ char	*init_prompt(char *curr_dir, t_shell *sh)
 	return (input);
 }
 
-// lvls[0] = lvl
-// lvls[1] = new_lvl
-// lvls[2] = up_lvl
+/**
+ * @brief Sets the empty input error to 0 if empty, else 2.
+ * // lvls[0] = lvl lvls[1] = new_lvl lvls[2] = up_lvl
+ * @param sh t_shell structure to init
+ * @param env environment variables
+ * @return void
+ */
 void	init_sh(t_shell *sh, char *env[])
 {
 	char	*lvls[3];
@@ -71,8 +92,6 @@ void	init_sh(t_shell *sh, char *env[])
 	sh->tk = NULL;
 	sh->input = NULL;
 	sh->dir = NULL;
-	sh->std[0] = dup(STDIN_FILENO);
-	sh->std[1] = dup(STDOUT_FILENO);
 	sh->env = ft_create_env(env);
 	lvls[0] = ft_getenv(sh->env, "SHLVL");
 	if (lvls[0])

@@ -12,18 +12,26 @@
 
 #include "../../includes/minishell.h"
 
+/**
+ * @brief Handles the signals during blocking commands
+ * @param signum 
+ * @return void
+ */
 void	handle_fork_sig(int signum)
 {
-	//write(1, "Fork sig\n", 10);
 	if (signum == SIGQUIT)
 		write(1, "Quit (core dumped)\n", 20);
 	if (signum == SIGINT)
 		write(1, "\n", 1);
 }
 
+/**
+ * @brief Sets the SIGINT for heredoc
+ * @param signum 
+ * @return void
+ */
 void	signal_handler(int sig)
 {
-	//write(1, "Hand sig\n", 10);
 	if (sig == SIGINT)
 	{
 		write(1, "\n", 1);
@@ -33,15 +41,35 @@ void	signal_handler(int sig)
 	}
 }
 
-void	handle_others(int sig)
+/**
+ * @brief Sets the SIGINT for heredoc
+ * @param signum 
+ * @return void
+ */
+void	signal_handler_2(int sig)
 {
-	//write(1, "Others\n", 10);
+	if (sig == SIGINT)
+		write(1, "^C\n", 4);
+}
+
+/**
+ * @brief Sets the SIGINT for heredoc
+ * @param signum 
+ * @return void
+ */
+void	sig_heredoc(int sig)
+{
 	if (sig == SIGINT)
 	{
-		write(1, "", 0);
+		write(1, "\n", 1);
 	}
 }
 
+/**
+ * @brief Sets the SIGINT & SIGQUIT handlers for the main execution
+ * @param void
+ * @return void
+ */
 int	manage_signals(void)
 {
 	signal(SIGINT, signal_handler);

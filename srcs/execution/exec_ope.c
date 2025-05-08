@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelon      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/26 16:27:53 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/14 16:15:16 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/07 17:14:58 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void	exec_left_cmd(int pipe_fd[2], t_node **cmd_tree, t_shell *sh)
 	recursive_exec(cmd_tree, sh, true);
 	ft_free_string_array(sh->env);
 	free_sh(sh);
-	exit(0);
+	exit(1);
 }
 
 static void	exec_right_cmd(int pipe_fd[2], t_node **cmd_tree, t_shell *sh)
@@ -34,7 +34,7 @@ static void	exec_right_cmd(int pipe_fd[2], t_node **cmd_tree, t_shell *sh)
 	recursive_exec(cmd_tree, sh, true);
 	ft_free_string_array(sh->env);
 	free_sh(sh);
-	exit(0);
+	exit(1);
 }
 
 void	exec_pipe(t_node **cmd_tree, t_shell *sh, bool in_pipe)
@@ -43,8 +43,6 @@ void	exec_pipe(t_node **cmd_tree, t_shell *sh, bool in_pipe)
 	int		pipe_fd[2];
 	t_ec	ec;
 
-	// ec.old_sigint = signal(SIGINT, handle_fork_sig);
-	// ec.old_sigquit = signal(SIGQUIT, handle_fork_sig);
 	if (pipe(pipe_fd) == -1)
 		free_all(sh, pipe_fd, BL"Pipe error"DEF, in_pipe);
 	pids[0] = fork();
@@ -61,8 +59,8 @@ void	exec_pipe(t_node **cmd_tree, t_shell *sh, bool in_pipe)
 	close(pipe_fd[0]);
 	waitpid(pids[0], NULL, 0);
 	waitpid(pids[1], &ec.status, 0);
-	// signal(SIGINT, ec.old_sigint);
-	// signal(SIGQUIT, ec.old_sigquit);
+	if (ec.status == 32512)
+		ec.status = 127;
 	sh->error = ec.status;
 }
 

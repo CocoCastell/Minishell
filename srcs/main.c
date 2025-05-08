@@ -6,7 +6,7 @@
 /*   By: cochatel <cochatel@student.42barcelona.com>+#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 14:47:37 by cochatel          #+#    #+#             */
-/*   Updated: 2025/04/22 11:27:32 by cochatel         ###   ########.fr       */
+/*   Updated: 2025/05/07 17:27:56 by cochatel         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,16 @@
  * @brief Sets the empty input error to 0 if empty, else 2
  * @param sh t_shell to modify sh->error
  */
-void	set_error(t_shell *sh)
+void	set_error(t_shell *sh, int error)
 {
 	int	i;
 
 	i = 0;
 	while (sh->input[i] == 32 || sh->input[i] == '\t')
 		i++;
-	if (sh->input[i] == '\0')
+	if (error == 130)
+		sh->error = 130;
+	else if (sh->input[i] == '\0')
 		sh->error = 0;
 	else
 		sh->error = 2;
@@ -48,6 +50,19 @@ char	*ft_shorten_dir(char *long_dir)
 	return (cwd);
 }
 
+void	handle_tokens_and_execute(t_main *m)
+{
+	m->tk_cpy = *(m->sh.tk);
+	m->sh.tree = parsing(&m->tk_cpy, &m->sh);
+	free_tokens(m->sh.tk);
+	m->tree_ptr = m->sh.tree;
+	if (m->sh.tree != NULL && m->sh.tree->error == 0)
+		recursive_exec(&m->tree_ptr, &m->sh, false);
+	else
+		set_error(&m->sh, m->sh.tree->error);
+	free_sh(&m->sh);
+}
+
 int	main(int argc, char *argv[], char *env[])
 {
 	t_main	m;
@@ -59,20 +74,11 @@ int	main(int argc, char *argv[], char *env[])
 		m.sh.input = init_prompt(ft_shorten_dir(m.sh.dir), &m.sh);
 		m.sh.tk = tokenize(m.sh.input, &m.sh);
 		if (m.sh.tk)
-		{
-			m.tk_cpy = *(m.sh.tk);
-			m.sh.tree = parsing(&m.tk_cpy, &m.sh);
-			free_tokens(m.sh.tk);
-			m.tree_ptr = m.sh.tree;
-			if (m.sh.tree != NULL && m.sh.tree->error == 0)
-				recursive_exec(&m.tree_ptr, &m.sh, false);
-			else
-				set_error(&m.sh);
-			free_sh(&m.sh);
-		}
+			handle_tokens_and_execute(&m);
 		else
-			free(m.sh.input);
+			free_wrap(m.sh.input);
 		m.sh.input = NULL;
 	}
+	ft_free_string_array(m.sh.env);
 	return ((void)argc, (void)argv, EXIT_SUCCESS);
 }

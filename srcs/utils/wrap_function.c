@@ -12,6 +12,11 @@
 
 #include "../includes/minishell.h"
 
+/**
+ * @brief Free wrapper. Makes sure not to double free
+ * @param str string to free
+ * @return void
+ */
 void	free_wrap(void *str)
 {
 	if (str != NULL)
